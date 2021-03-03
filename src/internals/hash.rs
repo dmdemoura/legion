@@ -1,10 +1,8 @@
 use core::hash::Hasher;
 
-use super::id::ID;
-
 /// A hasher optimized for hashing component type IDs.
 #[derive(Default)]
-pub struct ComponentTypeIdHasher(ID);
+pub struct ComponentTypeIdHasher(u64);
 
 impl Hasher for ComponentTypeIdHasher {
     #[inline]
@@ -13,15 +11,6 @@ impl Hasher for ComponentTypeIdHasher {
     }
 
     #[inline]
-    #[cfg(feature = "adven-gba")]
-    fn write_u32(&mut self, seed: u32) {
-        // This must only be used to hash one value.
-        debug_assert_eq!(self.0, 0);
-        self.0 = seed;
-    }
-
-    #[inline]
-    #[cfg(not(feature = "adven-gba"))]
     fn write_u64(&mut self, seed: u64) {
         // This must only be used to hash one value.
         debug_assert_eq!(self.0, 0);
