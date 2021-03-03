@@ -1,4 +1,5 @@
 #![deny(missing_docs)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 //! Legion aims to be a feature rich high performance ECS library for Rust game projects with minimal boilerplate.
 //!
@@ -184,6 +185,8 @@
 //! * `serialize` - Enables the serde serialization module and associated functionality. Enabled by default.
 //! * `crossbeam-events` - Implements the `EventSender` trait for crossbeam `Sender` channels, allowing them to be used for event subscriptions. Enabled by default.
 //! * `codegen` - Enables the `#[system]` procedural macro. Enabled by default.
+
+extern crate alloc;
 
 // implementation modules
 mod internals;

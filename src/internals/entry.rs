@@ -1,8 +1,10 @@
-use std::sync::Arc;
+use alloc::sync::Arc;
 
+#[cfg(feature = "std")]
 use thiserror::Error;
 
 use crate::internals::{
+    alloc_prelude::*,
     entity::EntityLocation,
     insert::ArchetypeSource,
     query::filter::{FilterResult, LayoutFilter},
@@ -16,10 +18,14 @@ use crate::internals::{
 };
 
 /// An error type which describes why an attempt to retrieve a component failed.
-#[derive(Error, Copy, Clone, Debug, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Hash)]
+#[cfg_attr(feature = "std", derive(Error))]
 pub enum ComponentError {
     /// The component was not found on the entity.
-    #[error("the component {component_name} was not found on the entity")]
+    #[cfg_attr(
+        feature = "std",
+        error("the component {component_name} was not found on the entity")
+    )]
     NotFound {
         /// The type ID of the component.
         component_type: ComponentTypeId,
@@ -28,9 +34,9 @@ pub enum ComponentError {
     },
 
     /// The world does not allow access to the component.
-    #[error("the world does not declare appropriate access to {component_name}, \
+    #[cfg_attr(feature = "std", error("the world does not declare appropriate access to {component_name}, \
             consider adding a query which contains `{component_name}` and this entity in its result set to the system, \
-            or use `SystemBuilder::read_component` to declare global access over all entities")]
+            or use `SystemBuilder::read_component` to declare global access over all entities"))]
     Denied {
         /// The type ID of the component.
         component_type: ComponentTypeId,
@@ -78,7 +84,7 @@ impl<'a> EntryRef<'a> {
         if !self.allowed_components.allows_read(component_type) {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -91,7 +97,7 @@ impl<'a> EntryRef<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -108,7 +114,7 @@ impl<'a> EntryRef<'a> {
         if !self.allowed_components.allows_write(component_type) {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -121,7 +127,7 @@ impl<'a> EntryRef<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -132,7 +138,7 @@ impl<'a> EntryRef<'a> {
         if !self.allowed_components.allows_read(component_type) {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -145,7 +151,7 @@ impl<'a> EntryRef<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -160,7 +166,7 @@ impl<'a> EntryRef<'a> {
         if !self.allowed_components.allows_write(component_type) {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -173,7 +179,7 @@ impl<'a> EntryRef<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -218,7 +224,7 @@ impl<'a> EntryMut<'a> {
         if !self.allowed_components.allows_read(component_type) {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -231,7 +237,7 @@ impl<'a> EntryMut<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -248,7 +254,7 @@ impl<'a> EntryMut<'a> {
         if !self.allowed_components.allows_write(component_type) {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -261,7 +267,7 @@ impl<'a> EntryMut<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -282,7 +288,7 @@ impl<'a> EntryMut<'a> {
         {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -295,7 +301,7 @@ impl<'a> EntryMut<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -312,7 +318,7 @@ impl<'a> EntryMut<'a> {
         {
             return Err(ComponentError::Denied {
                 component_type,
-                component_name: std::any::type_name::<T>(),
+                component_name: core::any::type_name::<T>(),
             });
         }
 
@@ -325,7 +331,7 @@ impl<'a> EntryMut<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type,
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -371,7 +377,7 @@ impl<'a> Entry<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type: ComponentTypeId::of::<T>(),
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -400,7 +406,7 @@ impl<'a> Entry<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type: ComponentTypeId::of::<T>(),
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -417,7 +423,7 @@ impl<'a> Entry<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type: ComponentTypeId::of::<T>(),
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -444,7 +450,7 @@ impl<'a> Entry<'a> {
             .ok_or_else(|| {
                 ComponentError::NotFound {
                     component_type: ComponentTypeId::of::<T>(),
-                    component_name: std::any::type_name::<T>(),
+                    component_name: core::any::type_name::<T>(),
                 }
             })
     }
@@ -479,7 +485,7 @@ impl<'a> Entry<'a> {
                 .get_downcast_mut::<T>()
                 .unwrap()
                 .extend_memcopy(target_arch, &component as *const T, 1);
-            std::mem::forget(component);
+            core::mem::forget(component);
             self.location = EntityLocation::new(target_arch, idx);
         };
     }

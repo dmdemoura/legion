@@ -1,7 +1,5 @@
 //! Contains types related to the [`World`] entity collection.
-
-use std::{
-    collections::HashMap,
+use core::{
     ops::Range,
     sync::atomic::{AtomicU64, Ordering},
 };
@@ -10,9 +8,11 @@ use bit_set::BitSet;
 use itertools::Itertools;
 
 use super::{
+    alloc_prelude::*,
     entity::{Allocate, Entity, EntityHasher, EntityLocation, LocationMap, ID_CLONE_MAPPINGS},
     entry::{Entry, EntryMut, EntryRef},
     event::{EventSender, Subscriber, Subscribers},
+    hashmap::{hash_map, HashMap},
     insert::{ArchetypeSource, ArchetypeWriter, ComponentSource, IntoComponentSource},
     query::{
         filter::{EntityFilter, LayoutFilter},
@@ -29,7 +29,10 @@ use super::{
     subworld::{ComponentAccess, SubWorld},
 };
 
-type MapEntry<'a, K, V> = std::collections::hash_map::Entry<'a, K, V>;
+#[cfg(feature = "alloc")]
+type MapEntry<'a, K, V> = hash_map::Entry<'a, K, V, hash_map::DefaultHashBuilder>;
+#[cfg(feature = "std")]
+type MapEntry<'a, K, V> = hash_map::Entry<'a, K, V>;
 
 /// Error type representing a failure to access entity data.
 #[derive(thiserror::Error, Debug, Eq, PartialEq, Hash)]
@@ -173,7 +176,7 @@ impl World {
         let archetype = &mut self.archetypes[arch_index.0 as usize];
         let mut writer =
             ArchetypeWriter::new(arch_index, archetype, self.components.get_multi_mut());
-        components.push_components(&mut writer, std::iter::once(entity_id));
+        components.push_components(&mut writer, core::iter::once(entity_id));
 
         let (base, entities) = writer.inserted();
         self.entities.insert(entities, arch_index, base);
@@ -643,7 +646,7 @@ impl World {
 
         // set the entity mappings as context for Entity::clone
         ID_CLONE_MAPPINGS.with(|cell| {
-            std::mem::swap(&mut *cell.borrow_mut(), &mut mappings);
+            core::mem::swap(&mut *cell.borrow_mut(), &mut mappings);
         });
 
         // clone entities
@@ -693,7 +696,7 @@ impl World {
         reallocated.unwrap_or_else(|| {
             // switch the map context back to recover our hashmap
             ID_CLONE_MAPPINGS.with(|cell| {
-                std::mem::swap(&mut *cell.borrow_mut(), &mut mappings);
+                core::mem::swap(&mut *cell.borrow_mut(), &mut mappings);
             });
             mappings
         })
@@ -749,7 +752,7 @@ impl World {
 
         // set the entity mappings as context for Entity::clone
         ID_CLONE_MAPPINGS.with(|cell| {
-            std::mem::swap(&mut *cell.borrow_mut(), &mut mappings);
+            core::mem::swap(&mut *cell.borrow_mut(), &mut mappings);
         });
 
         // merge components into the archetype
@@ -1102,7 +1105,7 @@ impl Duplicate {
 
                     unsafe {
                         dst.extend_memcopy(&component as *const Target, 1);
-                        std::mem::forget(component);
+                        core::mem::forget(component);
                     }
                 }
             },
@@ -1281,10 +1284,10 @@ mod test {
             groups: vec![<(A, B, C, D)>::to_group()],
         });
 
-        world.extend(std::iter::repeat((A(0f32),)).take(10000));
-        world.extend(std::iter::repeat((A(0f32), B(1f32))).take(10000));
-        world.extend(std::iter::repeat((A(0f32), B(1f32), C(2f32))).take(10000));
-        world.extend(std::iter::repeat((A(0f32), B(1f32), C(2f32), D(3f32))).take(10000));
+        world.extend(core::iter::repeat((A(0f32),)).take(10000));
+        world.extend(core::iter::repeat((A(0f32), B(1f32))).take(10000));
+        world.extend(core::iter::repeat((A(0f32), B(1f32), C(2f32))).take(10000));
+        world.extend(core::iter::repeat((A(0f32), B(1f32), C(2f32), D(3f32))).take(10000));
         world.pack(PackOptions::force());
 
         let mut query = <(Read<A>, Write<B>)>::query();

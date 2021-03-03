@@ -82,7 +82,7 @@ impl<'data> View<'data> for Entity {
 #[doc(hidden)]
 pub struct Iter<'a> {
     archetypes: &'a [Archetype],
-    indexes: std::slice::Iter<'a, ArchetypeIndex>,
+    indexes: core::slice::Iter<'a, ArchetypeIndex>,
 }
 
 impl<'a> Iterator for Iter<'a> {

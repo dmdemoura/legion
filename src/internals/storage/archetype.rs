@@ -8,17 +8,15 @@
 //! Legion performs all entity filtering at the archetype level; decisions are
 //! never made per-entity.
 
-use std::{
-    ops::{Index, IndexMut},
-    rc::Rc,
-    sync::Arc,
-};
+use alloc::{rc::Rc, sync::Arc};
+use core::ops::{Index, IndexMut};
 
 use super::{
     component::{Component, ComponentTypeId},
     UnknownComponentStorage,
 };
 use crate::internals::{
+    alloc_prelude::*,
     entity::Entity,
     event::{Event, Subscriber, Subscribers},
     query::filter::{FilterResult, LayoutFilter},
@@ -125,7 +123,7 @@ impl Archetype {
 
     pub(crate) fn drain(&mut self) -> Vec<Entity> {
         let mut entities = Vec::new();
-        std::mem::swap(&mut self.entities, &mut entities);
+        core::mem::swap(&mut self.entities, &mut entities);
         for entity in &entities {
             self.subscribers
                 .send(Event::EntityRemoved(*entity, self.index));

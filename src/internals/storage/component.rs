@@ -1,6 +1,6 @@
 //! Contains types related to entity components.
 
-use std::{
+use core::{
     any::TypeId,
     fmt::{Display, Formatter},
     hash::Hasher,
@@ -22,7 +22,7 @@ impl ComponentTypeId {
         Self {
             type_id: TypeId::of::<T>(),
             #[cfg(debug_assertions)]
-            name: std::any::type_name::<T>(),
+            name: core::any::type_name::<T>(),
         }
     }
 
@@ -32,7 +32,7 @@ impl ComponentTypeId {
     }
 }
 
-impl std::hash::Hash for ComponentTypeId {
+impl core::hash::Hash for ComponentTypeId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.type_id.hash(state);
     }
@@ -46,12 +46,12 @@ impl PartialEq for ComponentTypeId {
 
 impl Display for ComponentTypeId {
     #[cfg(debug_assertions)]
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.name)
     }
 
     #[cfg(not(debug_assertions))]
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?}", self.type_id)
     }
 }

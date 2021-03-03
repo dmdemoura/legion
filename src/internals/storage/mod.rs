@@ -1,5 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
+use core::{
     hash::BuildHasherDefault,
     ops::{Deref, DerefMut, Index, IndexMut},
     sync::atomic::{AtomicU64, Ordering},
@@ -9,7 +8,11 @@ use archetype::ArchetypeIndex;
 use component::{Component, ComponentTypeId};
 use downcast_rs::{impl_downcast, Downcast};
 
-use crate::internals::hash::ComponentTypeIdHasher;
+use crate::internals::{
+    alloc_prelude::*,
+    hash::ComponentTypeIdHasher,
+    hashmap::{HashMap, HashSet},
+};
 
 pub mod archetype;
 pub mod component;
@@ -30,10 +33,10 @@ impl ComponentMeta {
     /// Returns the component meta of component type `T`.
     pub fn of<T: Component>() -> Self {
         ComponentMeta {
-            size: std::mem::size_of::<T>(),
-            align: std::mem::align_of::<T>(),
-            drop_fn: if std::mem::needs_drop::<T>() {
-                Some(|ptr| unsafe { std::ptr::drop_in_place(ptr as *mut T) })
+            size: core::mem::size_of::<T>(),
+            align: core::mem::align_of::<T>(),
+            drop_fn: if core::mem::needs_drop::<T>() {
+                Some(|ptr| unsafe { core::ptr::drop_in_place(ptr as *mut T) })
             } else {
                 None
             },
@@ -141,7 +144,7 @@ pub trait UnknownComponentStorage: Downcast + Send + Sync {
     /// The data in this array will be memcopied into the world's internal storage.
     /// If the component type is not `Copy`, then the caller must ensure that the memory
     /// copied is not accessed until it is re-initialized. It is recommended to immediately
-    /// `std::mem::forget` the source after calling `extend_memcopy_raw`.
+    /// `core::mem::forget` the source after calling `extend_memcopy_raw`.
     unsafe fn extend_memcopy_raw(&mut self, archetype: ArchetypeIndex, ptr: *const u8, len: usize);
 
     /// Ensures that the given spare capacity is available for component insertions. This is a performance hint and
@@ -358,8 +361,8 @@ impl Components {
     }
 }
 
-impl std::fmt::Debug for Components {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for Components {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_list().entries(self.storages.keys()).finish()
     }
 }
@@ -467,6 +470,6 @@ impl<'a> MultiMut<'a> {
     }
 
     unsafe fn extend_lifetime<'b, T>(value: &'b mut T) -> &'a mut T {
-        std::mem::transmute::<&'b mut T, &'a mut T>(value)
+        core::mem::transmute::<&'b mut T, &'a mut T>(value)
     }
 }

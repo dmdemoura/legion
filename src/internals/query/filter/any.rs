@@ -2,7 +2,9 @@ use super::{
     not::Not, passthrough::Passthrough, ActiveFilter, DynamicFilter, FilterResult, GroupMatcher,
     LayoutFilter,
 };
-use crate::internals::{query::view::Fetch, storage::component::ComponentTypeId, world::WorldId};
+use crate::internals::{
+    alloc_prelude::*, query::view::Fetch, storage::component::ComponentTypeId, world::WorldId,
+};
 
 /// A filter which always matches `true`.
 #[derive(Debug, Clone, Default)]
@@ -31,7 +33,7 @@ impl DynamicFilter for Any {
     }
 }
 
-impl std::ops::Not for Any {
+impl core::ops::Not for Any {
     type Output = Not<Self>;
 
     #[inline]
@@ -40,7 +42,7 @@ impl std::ops::Not for Any {
     }
 }
 
-impl<Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for Any {
+impl<Rhs: ActiveFilter> core::ops::BitAnd<Rhs> for Any {
     type Output = Rhs;
 
     #[inline]
@@ -49,7 +51,7 @@ impl<Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for Any {
     }
 }
 
-impl std::ops::BitAnd<Passthrough> for Any {
+impl core::ops::BitAnd<Passthrough> for Any {
     type Output = Self;
 
     #[inline]
@@ -58,7 +60,7 @@ impl std::ops::BitAnd<Passthrough> for Any {
     }
 }
 
-impl<Rhs: ActiveFilter> std::ops::BitOr<Rhs> for Any {
+impl<Rhs: ActiveFilter> core::ops::BitOr<Rhs> for Any {
     type Output = Self;
 
     #[inline]
@@ -67,7 +69,7 @@ impl<Rhs: ActiveFilter> std::ops::BitOr<Rhs> for Any {
     }
 }
 
-impl std::ops::BitOr<Passthrough> for Any {
+impl core::ops::BitOr<Passthrough> for Any {
     type Output = Self;
 
     #[inline]

@@ -1,7 +1,6 @@
 //! Defines all filter types. Filters are a component of [queries](../index.html).
-
 use super::view::Fetch;
-use crate::internals::{storage::component::ComponentTypeId, world::WorldId};
+use crate::internals::{alloc_prelude::*, storage::component::ComponentTypeId, world::WorldId};
 
 pub mod and;
 pub mod any;
@@ -91,14 +90,14 @@ impl FilterResult {
     }
 }
 
-impl std::ops::BitOr<FilterResult> for FilterResult {
+impl core::ops::BitOr<FilterResult> for FilterResult {
     type Output = FilterResult;
     fn bitor(self, other: FilterResult) -> Self::Output {
         self.coalesce_or(other)
     }
 }
 
-impl std::ops::BitAnd<FilterResult> for FilterResult {
+impl core::ops::BitAnd<FilterResult> for FilterResult {
     type Output = FilterResult;
     fn bitand(self, other: FilterResult) -> Self::Output {
         self.coalesce_and(other)
@@ -200,11 +199,11 @@ where
     }
 }
 
-impl<L, F> std::ops::Not for EntityFilterTuple<L, F>
+impl<L, F> core::ops::Not for EntityFilterTuple<L, F>
 where
-    L: LayoutFilter + std::ops::Not,
+    L: LayoutFilter + core::ops::Not,
     L::Output: LayoutFilter,
-    F: DynamicFilter + std::ops::Not,
+    F: DynamicFilter + core::ops::Not,
     F::Output: DynamicFilter,
 {
     type Output = EntityFilterTuple<L::Output, F::Output>;
@@ -218,12 +217,12 @@ where
     }
 }
 
-impl<'a, L1, F1, L2, F2> std::ops::BitAnd<EntityFilterTuple<L2, F2>> for EntityFilterTuple<L1, F1>
+impl<'a, L1, F1, L2, F2> core::ops::BitAnd<EntityFilterTuple<L2, F2>> for EntityFilterTuple<L1, F1>
 where
-    L1: LayoutFilter + std::ops::BitAnd<L2>,
+    L1: LayoutFilter + core::ops::BitAnd<L2>,
     L1::Output: LayoutFilter,
     L2: LayoutFilter,
-    F1: DynamicFilter + std::ops::BitAnd<F2>,
+    F1: DynamicFilter + core::ops::BitAnd<F2>,
     F1::Output: DynamicFilter,
     F2: DynamicFilter,
 {
@@ -238,12 +237,12 @@ where
     }
 }
 
-impl<'a, L1, F1, L2, F2> std::ops::BitOr<EntityFilterTuple<L2, F2>> for EntityFilterTuple<L1, F1>
+impl<'a, L1, F1, L2, F2> core::ops::BitOr<EntityFilterTuple<L2, F2>> for EntityFilterTuple<L1, F1>
 where
-    L1: LayoutFilter + std::ops::BitOr<L2>,
+    L1: LayoutFilter + core::ops::BitOr<L2>,
     L1::Output: LayoutFilter,
     L2: LayoutFilter,
-    F1: DynamicFilter + std::ops::BitOr<F2>,
+    F1: DynamicFilter + core::ops::BitOr<F2>,
     F1::Output: DynamicFilter,
     F2: DynamicFilter,
 {

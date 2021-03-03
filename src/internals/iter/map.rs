@@ -1,4 +1,4 @@
-use std::{iter::FusedIterator, marker::PhantomData};
+use core::{iter::FusedIterator, marker::PhantomData};
 
 pub trait From<T> {
     fn from(source: T) -> Self;
@@ -6,10 +6,10 @@ pub trait From<T> {
 
 // impl<T, U> From<T> for U
 // where
-//     U: std::convert::From<T>,
+//     U: core::convert::From<T>,
 // {
 //     fn from(source: T) -> Self {
-//         std::convert::From::<T>::from(source)
+//         core::convert::From::<T>::from(source)
 //     }
 // }
 

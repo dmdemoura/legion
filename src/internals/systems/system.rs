@@ -1,6 +1,7 @@
 //! Contains types related to the definition of systems.
 
-use std::{any::TypeId, borrow::Cow, collections::HashMap, marker::PhantomData};
+use alloc::borrow::Cow;
+use core::{any::TypeId, marker::PhantomData};
 
 use bit_set::BitSet;
 
@@ -11,6 +12,7 @@ use super::{
 };
 use crate::internals::{
     cons::{ConsAppend, ConsFlatten},
+    hashmap::HashMap,
     permissions::Permissions,
     query::{
         filter::EntityFilter,
@@ -95,8 +97,8 @@ pub struct SystemId {
 
 struct Unspecified;
 
-impl std::fmt::Display for SystemId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for SystemId {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.name)
     }
 }

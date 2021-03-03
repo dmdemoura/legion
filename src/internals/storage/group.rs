@@ -1,10 +1,14 @@
-use std::{collections::HashSet, ops::Index};
+use core::ops::Index;
 
 use smallvec::SmallVec;
 
 use super::{
     archetype::{Archetype, ArchetypeIndex},
     component::{Component, ComponentTypeId},
+};
+use crate::internals::{
+    alloc_prelude::*,
+    hashmap::{HashMap, HashSet},
 };
 
 /// Describes the components in a component group.

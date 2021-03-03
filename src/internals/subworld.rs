@@ -1,6 +1,6 @@
 //! Contains types related to the [`SubWorld`] which can split a world by component type access.
 
-use std::borrow::Cow;
+use alloc::borrow::Cow;
 
 use bit_set::BitSet;
 

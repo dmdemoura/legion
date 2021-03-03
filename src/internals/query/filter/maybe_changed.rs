@@ -1,9 +1,11 @@
-use std::{collections::HashMap, marker::PhantomData};
+use core::marker::PhantomData;
 
 use super::{
     and::And, not::Not, or::Or, passthrough::Passthrough, ActiveFilter, DynamicFilter, FilterResult,
 };
-use crate::internals::{query::view::Fetch, storage::component::Component, world::WorldId};
+use crate::internals::{
+    hashmap::HashMap, query::view::Fetch, storage::component::Component, world::WorldId,
+};
 
 /// A filter which performs coarse-grained change detection.
 ///
@@ -67,7 +69,7 @@ impl<T: Component> DynamicFilter for ComponentChangedFilter<T> {
     }
 }
 
-impl<T: Component> std::ops::Not for ComponentChangedFilter<T> {
+impl<T: Component> core::ops::Not for ComponentChangedFilter<T> {
     type Output = Not<Self>;
 
     #[inline]
@@ -76,7 +78,7 @@ impl<T: Component> std::ops::Not for ComponentChangedFilter<T> {
     }
 }
 
-impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for ComponentChangedFilter<T> {
+impl<'a, T: Component, Rhs: ActiveFilter> core::ops::BitAnd<Rhs> for ComponentChangedFilter<T> {
     type Output = And<(Self, Rhs)>;
 
     #[inline]
@@ -87,7 +89,7 @@ impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for ComponentCha
     }
 }
 
-impl<'a, T: Component> std::ops::BitAnd<Passthrough> for ComponentChangedFilter<T> {
+impl<'a, T: Component> core::ops::BitAnd<Passthrough> for ComponentChangedFilter<T> {
     type Output = Self;
 
     #[inline]
@@ -96,7 +98,7 @@ impl<'a, T: Component> std::ops::BitAnd<Passthrough> for ComponentChangedFilter<
     }
 }
 
-impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitOr<Rhs> for ComponentChangedFilter<T> {
+impl<'a, T: Component, Rhs: ActiveFilter> core::ops::BitOr<Rhs> for ComponentChangedFilter<T> {
     type Output = Or<(Self, Rhs)>;
 
     #[inline]
@@ -107,7 +109,7 @@ impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitOr<Rhs> for ComponentChan
     }
 }
 
-impl<'a, T: Component> std::ops::BitOr<Passthrough> for ComponentChangedFilter<T> {
+impl<'a, T: Component> core::ops::BitOr<Passthrough> for ComponentChangedFilter<T> {
     type Output = Self;
 
     #[inline]

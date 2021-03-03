@@ -2,7 +2,9 @@ use super::{
     not::Not, or::Or, passthrough::Passthrough, ActiveFilter, DynamicFilter, FilterResult,
     GroupMatcher, LayoutFilter,
 };
-use crate::internals::{query::view::Fetch, storage::component::ComponentTypeId, world::WorldId};
+use crate::internals::{
+    alloc_prelude::*, query::view::Fetch, storage::component::ComponentTypeId, world::WorldId,
+};
 
 /// A filter which requires all filters within `T` match.
 #[derive(Debug, Clone)]
@@ -72,7 +74,7 @@ macro_rules! impl_and_filter {
             }
         }
 
-        impl<$( $ty ),*> std::ops::Not for And<($( $ty, )*)> {
+        impl<$( $ty ),*> core::ops::Not for And<($( $ty, )*)> {
             type Output = Not<Self>;
 
             #[inline]
@@ -81,7 +83,7 @@ macro_rules! impl_and_filter {
             }
         }
 
-        impl<$( $ty ),*, Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for And<($( $ty, )*)> {
+        impl<$( $ty ),*, Rhs: ActiveFilter> core::ops::BitAnd<Rhs> for And<($( $ty, )*)> {
             type Output = And<($( $ty, )* Rhs)>;
 
             #[inline]
@@ -94,7 +96,7 @@ macro_rules! impl_and_filter {
             }
         }
 
-        impl<$( $ty ),*> std::ops::BitAnd<Passthrough> for And<($( $ty, )*)> {
+        impl<$( $ty ),*> core::ops::BitAnd<Passthrough> for And<($( $ty, )*)> {
             type Output = Self;
 
             #[inline]
@@ -103,7 +105,7 @@ macro_rules! impl_and_filter {
             }
         }
 
-        impl<$( $ty ),*, Rhs: ActiveFilter> std::ops::BitOr<Rhs> for And<($( $ty, )*)> {
+        impl<$( $ty ),*, Rhs: ActiveFilter> core::ops::BitOr<Rhs> for And<($( $ty, )*)> {
             type Output = Or<(Self, Rhs)>;
 
             #[inline]
@@ -114,7 +116,7 @@ macro_rules! impl_and_filter {
             }
         }
 
-        impl<$( $ty ),*> std::ops::BitOr<Passthrough> for And<($( $ty, )*)> {
+        impl<$( $ty ),*> core::ops::BitOr<Passthrough> for And<($( $ty, )*)> {
             type Output = Self;
 
             #[inline]

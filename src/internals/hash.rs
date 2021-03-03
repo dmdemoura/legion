@@ -1,4 +1,4 @@
-use std::hash::Hasher;
+use core::hash::Hasher;
 
 /// A hasher optimized for hashing component type IDs.
 #[derive(Default)]

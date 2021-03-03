@@ -1,12 +1,13 @@
 //! Defines all view types. Views are a component of [queries](../index.html).
 
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use super::{
     filter::{and::And, EntityFilter, EntityFilterTuple},
     QueryResult,
 };
 use crate::internals::{
+    alloc_prelude::*,
     iter::{
         indexed::{IndexedIter, TrustedRandomAccess},
         map::MapInto,
@@ -239,7 +240,7 @@ macro_rules! impl_view_tuple {
 
                 fn reads_types() -> Self::Read {
                     #![allow(non_snake_case)]
-                    let types = std::iter::empty();
+                    let types = core::iter::empty();
                     $( let [<$ty _reads>] = $ty::reads_types(); )*
                     $( let types = types.chain([<$ty _reads>].as_ref().iter()); )*
                     types.copied().collect()
@@ -247,7 +248,7 @@ macro_rules! impl_view_tuple {
 
                 fn writes_types() -> Self::Write {
                     #![allow(non_snake_case)]
-                    let types = std::iter::empty();
+                    let types = core::iter::empty();
                     $( let [<$ty _writes>] = $ty::writes_types(); )*
                     $( let types = types.chain([<$ty _writes>].as_ref().iter()); )*
                     types.copied().collect()

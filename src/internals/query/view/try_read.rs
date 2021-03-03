@@ -1,6 +1,6 @@
 #![doc(hidden)]
 
-use std::{any::TypeId, marker::PhantomData};
+use core::{any::TypeId, marker::PhantomData};
 
 use super::{DefaultFilter, Fetch, IntoIndexableIter, IntoView, ReadOnly, ReadOnlyFetch, View};
 use crate::internals::{
@@ -100,7 +100,7 @@ impl<'data, T: Component> View<'data> for TryRead<T> {
 #[doc(hidden)]
 pub struct TryReadIter<'a, T: Component> {
     components: Option<&'a T::Storage>,
-    archetype_indexes: std::slice::Iter<'a, ArchetypeIndex>,
+    archetype_indexes: core::slice::Iter<'a, ArchetypeIndex>,
     archetypes: &'a [Archetype],
 }
 
@@ -189,7 +189,7 @@ impl<'a, T: Component> Fetch for Slice<'a, T> {
             match self {
                 Self::Occupied { components, .. } => {
                     Some(unsafe {
-                        std::slice::from_raw_parts(
+                        core::slice::from_raw_parts(
                             components.as_ptr() as *const C,
                             components.len(),
                         )

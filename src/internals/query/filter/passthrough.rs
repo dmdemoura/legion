@@ -1,5 +1,7 @@
 use super::{DynamicFilter, FilterResult, GroupMatcher, LayoutFilter};
-use crate::internals::{query::view::Fetch, storage::component::ComponentTypeId, world::WorldId};
+use crate::internals::{
+    alloc_prelude::*, query::view::Fetch, storage::component::ComponentTypeId, world::WorldId,
+};
 
 /// A filter which always defers.
 #[derive(Debug, Clone, Default)]
@@ -27,7 +29,7 @@ impl DynamicFilter for Passthrough {
     }
 }
 
-impl std::ops::Not for Passthrough {
+impl core::ops::Not for Passthrough {
     type Output = Passthrough;
 
     #[inline]
@@ -36,7 +38,7 @@ impl std::ops::Not for Passthrough {
     }
 }
 
-impl<Rhs> std::ops::BitAnd<Rhs> for Passthrough {
+impl<Rhs> core::ops::BitAnd<Rhs> for Passthrough {
     type Output = Rhs;
 
     #[inline]
@@ -45,7 +47,7 @@ impl<Rhs> std::ops::BitAnd<Rhs> for Passthrough {
     }
 }
 
-impl<Rhs> std::ops::BitOr<Rhs> for Passthrough {
+impl<Rhs> core::ops::BitOr<Rhs> for Passthrough {
     type Output = Rhs;
 
     #[inline]

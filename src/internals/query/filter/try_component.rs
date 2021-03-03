@@ -1,10 +1,13 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use super::{
     and::And, not::Not, or::Or, passthrough::Passthrough, ActiveFilter, FilterResult, GroupMatcher,
     LayoutFilter,
 };
-use crate::internals::storage::component::{Component, ComponentTypeId};
+use crate::internals::{
+    alloc_prelude::*,
+    storage::component::{Component, ComponentTypeId},
+};
 
 /// A filter which matches `true` if the entity has the given component,
 /// else it will defer.
@@ -46,7 +49,7 @@ impl<T: Component> LayoutFilter for TryComponentFilter<T> {
     }
 }
 
-impl<T: Component> std::ops::Not for TryComponentFilter<T> {
+impl<T: Component> core::ops::Not for TryComponentFilter<T> {
     type Output = Not<Self>;
 
     #[inline]
@@ -55,7 +58,7 @@ impl<T: Component> std::ops::Not for TryComponentFilter<T> {
     }
 }
 
-impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for TryComponentFilter<T> {
+impl<'a, T: Component, Rhs: ActiveFilter> core::ops::BitAnd<Rhs> for TryComponentFilter<T> {
     type Output = And<(Self, Rhs)>;
 
     #[inline]
@@ -66,7 +69,7 @@ impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for TryComponent
     }
 }
 
-impl<'a, T: Component> std::ops::BitAnd<Passthrough> for TryComponentFilter<T> {
+impl<'a, T: Component> core::ops::BitAnd<Passthrough> for TryComponentFilter<T> {
     type Output = Self;
 
     #[inline]
@@ -75,7 +78,7 @@ impl<'a, T: Component> std::ops::BitAnd<Passthrough> for TryComponentFilter<T> {
     }
 }
 
-impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitOr<Rhs> for TryComponentFilter<T> {
+impl<'a, T: Component, Rhs: ActiveFilter> core::ops::BitOr<Rhs> for TryComponentFilter<T> {
     type Output = Or<(Self, Rhs)>;
 
     #[inline]
@@ -86,7 +89,7 @@ impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitOr<Rhs> for TryComponentF
     }
 }
 
-impl<'a, T: Component> std::ops::BitOr<Passthrough> for TryComponentFilter<T> {
+impl<'a, T: Component> core::ops::BitOr<Passthrough> for TryComponentFilter<T> {
     type Output = Self;
 
     #[inline]

@@ -1,10 +1,11 @@
 pub mod ser {
-    use std::{collections::HashMap, marker::PhantomData};
+    use core::marker::PhantomData;
 
     use itertools::Itertools;
     use serde::{ser::SerializeMap, Serialize, Serializer};
 
     use crate::internals::{
+        hashmap::HashMap,
         query::filter::LayoutFilter,
         serialize::{ser::WorldSerializer, UnknownType},
         storage::{
@@ -157,14 +158,20 @@ pub mod ser {
 }
 
 pub mod de {
+    #[cfg(feature = "alloc")]
+    use alloc::rc::Rc;
+    #[cfg(feature = "std")]
     use std::{collections::HashMap, rc::Rc};
 
+    #[cfg(feature = "alloc")]
+    use hashbrown::HashMap;
     use serde::{
         de::{DeserializeSeed, IgnoredAny, MapAccess, Visitor},
         Deserializer,
     };
 
     use crate::internals::{
+        alloc_prelude::*,
         entity::Entity,
         insert::{ArchetypeSource, ArchetypeWriter, ComponentSource, IntoComponentSource},
         serialize::{de::WorldDeserializer, UnknownType},
@@ -192,7 +199,7 @@ pub mod de {
             impl<'b, 'de, D: WorldDeserializer> Visitor<'de> for EntitySeqVisitor<'b, D> {
                 type Value = ();
 
-                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     formatter.write_str("entity map")
                 }
 
@@ -241,7 +248,7 @@ pub mod de {
             impl<'b, 'de, D: WorldDeserializer> Visitor<'de> for ComponentMapVisitor<'b, D> {
                 type Value = ();
 
-                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     formatter.write_str("struct Entity")
                 }
 

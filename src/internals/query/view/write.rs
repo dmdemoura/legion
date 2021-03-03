@@ -1,6 +1,6 @@
 #![doc(hidden)]
 
-use std::{any::TypeId, marker::PhantomData, slice::Iter};
+use core::{any::TypeId, marker::PhantomData, slice::Iter};
 
 use super::{DefaultFilter, Fetch, IntoIndexableIter, IntoView, View};
 use crate::internals::{
@@ -188,7 +188,7 @@ impl<'a, T: Component> Fetch for WriteFetch<'a, T> {
         if TypeId::of::<C>() == TypeId::of::<T>() {
             // safety: C and T are the same type
             Some(unsafe {
-                std::slice::from_raw_parts(
+                core::slice::from_raw_parts(
                     self.components.as_ptr() as *const C,
                     self.components.len(),
                 )
@@ -203,7 +203,7 @@ impl<'a, T: Component> Fetch for WriteFetch<'a, T> {
         if TypeId::of::<C>() == TypeId::of::<T>() {
             // safety: C and T are the same type
             Some(unsafe {
-                std::slice::from_raw_parts_mut(
+                core::slice::from_raw_parts_mut(
                     self.components.as_mut_ptr() as *mut C,
                     self.components.len(),
                 )

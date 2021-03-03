@@ -32,9 +32,9 @@
 fn min(a: (usize, Option<usize>), b: (usize, Option<usize>)) -> (usize, Option<usize>) {
     let (a_lower, a_upper) = a;
     let (b_lower, b_upper) = b;
-    let lower = std::cmp::min(a_lower, b_lower);
+    let lower = core::cmp::min(a_lower, b_lower);
     let upper = match (a_upper, b_upper) {
-        (Some(u1), Some(u2)) => Some(std::cmp::min(u1, u2)),
+        (Some(u1), Some(u2)) => Some(core::cmp::min(u1, u2)),
         _ => a_upper.or(b_upper),
     };
     (lower, upper)
@@ -94,7 +94,7 @@ macro_rules! impl_zip_iter {
             #[allow(clippy::let_and_return)]
             fn size_hint(&self) -> (usize, Option<usize>)
             {
-                let sh = (::std::usize::MAX, None);
+                let sh = (::core::usize::MAX, None);
                 let ($(ref $B,)*) = self.t;
                 $(
                     let sh = min($B.size_hint(), sh);

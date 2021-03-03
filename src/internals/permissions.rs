@@ -1,9 +1,11 @@
 //! Contains types related to read and write access declarations. Used by the scheduler and
 //! by [`SubWorld`](super::subworld::SubWorld) splits.
 
-use std::fmt::{Debug, Display};
+use core::fmt::{Debug, Display};
 
 use smallvec::SmallVec;
+
+use super::alloc_prelude::*;
 
 /// Describes read and write access to resources.
 #[derive(Clone)]
@@ -263,7 +265,7 @@ impl<T: PartialEq> Default for Permissions<T> {
 }
 
 impl<T: PartialEq + Debug> Debug for Permissions<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         fn list<V: Debug>(items: &[V]) -> String {
             use itertools::Itertools;
             items
@@ -283,7 +285,7 @@ impl<T: PartialEq + Debug> Debug for Permissions<T> {
 }
 
 impl<T: PartialEq + Display> Display for Permissions<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         fn list<V: Display>(items: &[V]) -> String {
             use itertools::Itertools;
             items

@@ -142,7 +142,7 @@ use syn::{
 /// ```ignore
 /// # use legion_codegen::system;
 /// # use legion::{storage::Component, Schedule};
-/// # use std::fmt::Debug;
+/// # use core::fmt::Debug;
 /// # #[derive(Debug)]
 /// # struct Position;
 /// #[system(for_each)]
@@ -827,7 +827,7 @@ impl Config {
                     .map(|param| param.ident.clone())
                     .collect::<Vec<_>>();
                 quote! {
-                    let generic_names = "<".to_owned() + &[#(std::any::type_name::<#param_names>()),*].join(", ") + ">";
+                    let generic_names = "<".to_owned() + &[#(core::any::type_name::<#param_names>()),*].join(", ") + ">";
                 }
             }
         } else {

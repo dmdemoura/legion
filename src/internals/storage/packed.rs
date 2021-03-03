@@ -1,13 +1,13 @@
 //! Component storage which can pack archetypes into contiguous memory.
 
-use std::{
+use alloc::rc::Rc;
+use core::{
     alloc::Layout,
     cell::UnsafeCell,
     iter::Zip,
     mem::{align_of, size_of},
     ops::{Deref, DerefMut},
     ptr::NonNull,
-    rc::Rc,
     slice::Iter,
 };
 
@@ -16,6 +16,7 @@ use super::{
     ComponentMeta, ComponentSlice, ComponentSliceMut, ComponentStorage, Epoch,
     UnknownComponentStorage,
 };
+use crate::internals::alloc_prelude::*;
 
 /// A memory allocation for an array of `T`.
 #[derive(Debug)]
@@ -40,7 +41,7 @@ impl<T> RawAlloc<T> {
             let layout =
                 Layout::from_size_align(size_of::<T>() * min_capacity, align_of::<T>()).unwrap();
             Self {
-                ptr: NonNull::new(unsafe { std::alloc::alloc(layout) as *mut _ }).unwrap(),
+                ptr: NonNull::new(unsafe { alloc::alloc::alloc(layout) as *mut _ }).unwrap(),
                 cap: min_capacity,
             }
         }
@@ -58,9 +59,9 @@ impl<T> RawAlloc<T> {
                 let layout =
                     Layout::from_size_align(size_of::<T>() * new_capacity, align_of::<T>())
                         .unwrap();
-                std::alloc::alloc(layout) as *mut T
+                alloc::alloc::alloc(layout) as *mut T
             } else {
-                std::alloc::realloc(
+                alloc::alloc::realloc(
                     self.ptr.as_ptr() as *mut u8,
                     self.layout(),
                     size_of::<T>() * new_capacity,
@@ -70,7 +71,7 @@ impl<T> RawAlloc<T> {
                 self.ptr = new_ptr;
                 self.cap = new_capacity;
             } else {
-                std::alloc::handle_alloc_error(Layout::from_size_align_unchecked(
+                alloc::alloc::handle_alloc_error(Layout::from_size_align_unchecked(
                     size_of::<T>() * new_capacity,
                     align_of::<T>(),
                 ));
@@ -85,7 +86,7 @@ impl<T> Drop for RawAlloc<T> {
             unsafe {
                 let layout =
                     Layout::from_size_align_unchecked(size_of::<T>() * self.cap, align_of::<T>());
-                std::alloc::dealloc(self.ptr.as_ptr() as *mut _, layout);
+                alloc::dealloc(self.ptr.as_ptr() as *mut _, layout);
             }
         }
     }
@@ -152,7 +153,7 @@ impl<T> ComponentVec<T> {
     unsafe fn extend_memcopy(&mut self, epoch: Epoch, ptr: *const T, count: usize) {
         self.ensure_capacity(epoch, count);
         let (dst, len) = self.as_raw_slice();
-        std::ptr::copy_nonoverlapping(ptr, dst.as_ptr().add(len), count);
+        core::ptr::copy_nonoverlapping(ptr, dst.as_ptr().add(len), count);
         match self {
             Self::Packed { len, .. } => *len += count,
             Self::Loose {
@@ -183,9 +184,9 @@ impl<T> ComponentVec<T> {
             let item_ptr = ptr.as_ptr().add(index);
             let last_ptr = ptr.as_ptr().add(len - 1);
             if index < len - 1 {
-                std::ptr::swap(item_ptr, last_ptr);
+                core::ptr::swap(item_ptr, last_ptr);
             }
-            let value = std::ptr::read(last_ptr);
+            let value = core::ptr::read(last_ptr);
             match self {
                 Self::Packed { len, .. } => *len -= 1,
                 Self::Loose {
@@ -200,7 +201,7 @@ impl<T> ComponentVec<T> {
     }
 
     fn grow(&mut self, epoch: Epoch, new_capacity: usize) {
-        debug_assert_ne!(std::mem::size_of::<T>(), 0);
+        debug_assert_ne!(core::mem::size_of::<T>(), 0);
 
         match self {
             Self::Packed {
@@ -213,7 +214,7 @@ impl<T> ComponentVec<T> {
                 debug_assert!(*cap < new_capacity);
                 let new_alloc = RawAlloc::new(*len);
                 unsafe {
-                    std::ptr::copy_nonoverlapping(
+                    core::ptr::copy_nonoverlapping(
                         raw.ptr.as_ptr().add(*offset),
                         new_alloc.ptr.as_ptr(),
                         *len,
@@ -237,9 +238,9 @@ impl<T> ComponentVec<T> {
 
     unsafe fn pack(&mut self, dst: Rc<RawAlloc<T>>, offset: usize) {
         let (ptr, len) = self.as_raw_slice();
-        debug_assert_ne!(std::mem::size_of::<T>(), 0);
+        debug_assert_ne!(core::mem::size_of::<T>(), 0);
         debug_assert!(dst.cap >= offset + len);
-        std::ptr::copy_nonoverlapping(ptr.as_ptr(), dst.ptr.as_ptr().add(offset), len);
+        core::ptr::copy_nonoverlapping(ptr.as_ptr(), dst.ptr.as_ptr().add(offset), len);
         *self = Self::Packed {
             raw: dst,
             offset,
@@ -253,24 +254,24 @@ impl<T> Deref for ComponentVec<T> {
     type Target = [T];
     fn deref(&self) -> &Self::Target {
         let (ptr, len) = self.as_raw_slice();
-        unsafe { std::slice::from_raw_parts(ptr.as_ptr(), len) }
+        unsafe { core::slice::from_raw_parts(ptr.as_ptr(), len) }
     }
 }
 
 impl<T> DerefMut for ComponentVec<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         let (ptr, len) = self.as_raw_slice();
-        unsafe { std::slice::from_raw_parts_mut(ptr.as_ptr(), len) }
+        unsafe { core::slice::from_raw_parts_mut(ptr.as_ptr(), len) }
     }
 }
 
 impl<T> Drop for ComponentVec<T> {
     fn drop(&mut self) {
-        if std::mem::needs_drop::<T>() {
+        if core::mem::needs_drop::<T>() {
             unsafe {
                 let (ptr, len) = self.as_raw_slice();
                 for i in 0..len {
-                    std::ptr::drop_in_place(ptr.as_ptr().add(i));
+                    core::ptr::drop_in_place(ptr.as_ptr().add(i));
                 }
             }
         }
@@ -352,7 +353,7 @@ impl<T: Component> UnknownComponentStorage for PackedStorage<T> {
         self.update_slice(dst_slice_index);
 
         // forget component to prevent it being dropped (we copied it into the destination)
-        std::mem::forget(value);
+        core::mem::forget(value);
     }
 
     fn insert_archetype(&mut self, archetype: ArchetypeIndex, index: Option<usize>) {
@@ -395,7 +396,7 @@ impl<T: Component> UnknownComponentStorage for PackedStorage<T> {
         if dst.allocations[dst_index].len() == 0 {
             // fast path:
             // swap the allocations
-            std::mem::swap(
+            core::mem::swap(
                 &mut self.allocations[src_index],
                 &mut dst.allocations[dst_index],
             );
@@ -409,8 +410,8 @@ impl<T: Component> UnknownComponentStorage for PackedStorage<T> {
 
             // clear and forget source
             let mut swapped = ComponentVec::<T>::new();
-            std::mem::swap(&mut self.allocations[src_index], &mut swapped);
-            std::mem::forget(swapped);
+            core::mem::swap(&mut self.allocations[src_index], &mut swapped);
+            core::mem::forget(swapped);
         }
 
         // update slice pointers
@@ -428,7 +429,7 @@ impl<T: Component> UnknownComponentStorage for PackedStorage<T> {
     ) {
         let component = self.swap_remove_internal(src_archetype, src_component);
         unsafe { dst.extend_memcopy_raw(dst_archetype, &component as *const T as *const u8, 1) };
-        std::mem::forget(component);
+        core::mem::forget(component);
     }
 
     fn swap_remove(&mut self, archetype: ArchetypeIndex, index: ComponentIndex) {
@@ -545,7 +546,7 @@ impl<'a, T: Component> ComponentStorage<'a, T> for PackedStorage<T> {
     fn get(&'a self, ArchetypeIndex(archetype): ArchetypeIndex) -> Option<ComponentSlice<'a, T>> {
         let slice_index = *self.index.get(archetype as usize)?;
         let (ptr, len) = self.slices.get(slice_index)?;
-        let slice = unsafe { std::slice::from_raw_parts(ptr.as_ptr(), *len as usize) };
+        let slice = unsafe { core::slice::from_raw_parts(ptr.as_ptr(), *len as usize) };
         let version = unsafe { &*self.versions.get_unchecked(slice_index).get() };
         Some(ComponentSlice::new(slice, version))
     }
@@ -556,7 +557,7 @@ impl<'a, T: Component> ComponentStorage<'a, T> for PackedStorage<T> {
     ) -> Option<ComponentSliceMut<'a, T>> {
         let slice_index = *self.index.get(archetype as usize)?;
         let (ptr, len) = self.slices.get(slice_index)?;
-        let slice = std::slice::from_raw_parts_mut(ptr.as_ptr(), *len as usize);
+        let slice = core::slice::from_raw_parts_mut(ptr.as_ptr(), *len as usize);
         let version = &mut *self.versions.get_unchecked(slice_index).get();
         Some(ComponentSliceMut::new(slice, version))
     }
@@ -593,7 +594,7 @@ impl<'a, T: Component> Iterator for ComponentIter<'a, T> {
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         self.slices.next().map(|((ptr, len), version)| {
-            let slice = unsafe { std::slice::from_raw_parts(ptr.as_ptr(), *len as usize) };
+            let slice = unsafe { core::slice::from_raw_parts(ptr.as_ptr(), *len as usize) };
             let version = unsafe { &*version.get() };
             ComponentSlice::new(slice, version)
         })
@@ -612,7 +613,7 @@ impl<'a, T: Component> Iterator for ComponentIterMut<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         self.slices.next().map(|((ptr, len), version)| {
             // safety: we know each slice is disjoint
-            let slice = unsafe { std::slice::from_raw_parts_mut(ptr.as_ptr(), *len as usize) };
+            let slice = unsafe { core::slice::from_raw_parts_mut(ptr.as_ptr(), *len as usize) };
             let version = unsafe { &mut *version.get() };
             ComponentSliceMut::new(slice, version)
         })
@@ -654,7 +655,7 @@ mod test {
             let components = vec![1, 2, 3];
             let ptr = components.as_ptr();
             storage.extend_memcopy(ArchetypeIndex(0), ptr, 3);
-            std::mem::forget(components);
+            core::mem::forget(components);
 
             let slice = storage.get_mut(ArchetypeIndex(0)).unwrap();
             assert_eq!(slice.into_slice(), &[1usize, 2usize, 3usize]);
@@ -670,7 +671,7 @@ mod test {
             let components = vec![(), (), ()];
             let ptr = components.as_ptr();
             storage.extend_memcopy(ArchetypeIndex(0), ptr, 3);
-            std::mem::forget(components);
+            core::mem::forget(components);
 
             let slice = storage.get_mut(ArchetypeIndex(0)).unwrap();
             assert_eq!(slice.into_slice(), &[(), (), ()]);
@@ -686,7 +687,7 @@ mod test {
             let components = vec![1, 2, 3];
             let ptr = components.as_ptr();
             storage.extend_memcopy(ArchetypeIndex(0), ptr, 3);
-            std::mem::forget(components);
+            core::mem::forget(components);
         }
 
         storage.swap_remove(ArchetypeIndex(0), ComponentIndex(0));
@@ -706,7 +707,7 @@ mod test {
             let components = vec![1, 2, 3];
             let ptr = components.as_ptr();
             storage.extend_memcopy(ArchetypeIndex(0), ptr, 3);
-            std::mem::forget(components);
+            core::mem::forget(components);
         }
 
         storage.swap_remove(ArchetypeIndex(0), ComponentIndex(2));

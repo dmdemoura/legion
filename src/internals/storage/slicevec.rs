@@ -1,6 +1,8 @@
 //! A vector of slices.
 
-use std::iter::{FusedIterator, IntoIterator};
+use core::iter::{FusedIterator, IntoIterator};
+
+use crate::internals::alloc_prelude::*;
 
 /// A vector of slices.
 ///

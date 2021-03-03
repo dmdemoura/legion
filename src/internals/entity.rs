@@ -1,6 +1,5 @@
-use std::{
+use core::{
     cell::RefCell,
-    collections::HashMap,
     fmt::Debug,
     hash::BuildHasherDefault,
     num::NonZeroU64,
@@ -8,7 +7,9 @@ use std::{
 };
 
 use super::{
+    alloc_prelude::*,
     hash::U64Hasher,
+    hashmap::HashMap,
     storage::{archetype::ArchetypeIndex, ComponentIndex},
 };
 
@@ -111,7 +112,7 @@ pub struct LocationMap {
 }
 
 impl Debug for LocationMap {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let entries = self.blocks.iter().flat_map(|(base, locs)| {
             locs.iter().enumerate().filter_map(move |(i, loc)| {
                 // Safety: as long as the inserted entities are valid, this should also be valid

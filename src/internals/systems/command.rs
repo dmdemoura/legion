@@ -4,21 +4,20 @@
 //! For example, creating or destroying entities.
 //! Command buffers are flushed at the end of the schedule, or by adding a
 //! `flush_command_buffers` step to the schedule.
-
-use std::{
+use alloc::{collections::VecDeque, sync::Arc};
+use core::{
     any::type_name,
-    collections::VecDeque,
     fmt,
     iter::{Fuse, FusedIterator},
     marker::PhantomData,
     ops::Range,
-    sync::Arc,
 };
 
 use smallvec::SmallVec;
 
 use crate::{
     internals::{
+        alloc_prelude::*,
         entity::Entity,
         insert::{
             ArchetypeSource, ArchetypeWriter, ComponentSource, IntoComponentSource, KnownLength,

@@ -1,5 +1,5 @@
 pub mod ser {
-    use std::collections::HashMap;
+    use core::marker::PhantomData;
 
     use itertools::Itertools;
     use serde::{
@@ -8,6 +8,8 @@ pub mod ser {
     };
 
     use crate::internals::{
+        alloc_prelude::*,
+        hashmap::HashMap,
         query::filter::LayoutFilter,
         serialize::{ser::WorldSerializer, UnknownType},
         storage::{
@@ -178,7 +180,8 @@ pub mod ser {
 }
 
 pub mod de {
-    use std::{marker::PhantomData, rc::Rc};
+    use alloc::rc::Rc;
+    use core::marker::PhantomData;
 
     use serde::{
         de::{DeserializeSeed, MapAccess, SeqAccess, Visitor},
@@ -214,7 +217,7 @@ pub mod de {
             impl<'b, 'de, S: WorldDeserializer> Visitor<'de> for SeqVisitor<'b, S> {
                 type Value = ();
 
-                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     formatter.write_str("archetype sequence")
                 }
 
@@ -261,7 +264,7 @@ pub mod de {
             impl<'b, 'de, S: WorldDeserializer> Visitor<'de> for StructVisitor<'b, S> {
                 type Value = ();
 
-                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     formatter.write_str("archetype sequence")
                 }
 
@@ -362,7 +365,7 @@ pub mod de {
             impl<'b, 'de, S: WorldDeserializer> Visitor<'de> for SeqVisitor<'b, S> {
                 type Value = EntityLayout;
 
-                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     formatter.write_str("type ID sequence")
                 }
 
@@ -536,7 +539,7 @@ pub mod de {
             impl<'c, 'd, 'de> Visitor<'de> for SeqVisitor<'c, 'd> {
                 type Value = ();
 
-                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     formatter.write_str("entity seq")
                 }
 
@@ -582,7 +585,7 @@ pub mod de {
             impl<'c, 'd, 'de, S: WorldDeserializer> Visitor<'de> for MapVisitor<'c, 'd, S> {
                 type Value = ();
 
-                fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     formatter.write_str("component map")
                 }
 

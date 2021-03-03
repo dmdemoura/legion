@@ -1,6 +1,6 @@
 //! Contains types required to serialize and deserialize a world via the serde library.
 
-use std::{collections::HashMap, hash::Hash, marker::PhantomData};
+use core::{hash::Hash, marker::PhantomData};
 
 use de::{WorldDeserializer, WorldVisitor};
 use id::EntitySerializer;
@@ -9,6 +9,8 @@ use serde::{de::DeserializeSeed, Serializer};
 
 use crate::{
     internals::{
+        alloc_prelude::*,
+        hashmap::HashMap,
         storage::{
             archetype::{ArchetypeIndex, EntityLayout},
             component::{Component, ComponentTypeId},
@@ -119,7 +121,7 @@ where
              archetype,
              serialize: &mut dyn FnMut(&dyn erased_serde::Serialize)| unsafe {
                 let (ptr, len) = storage.get_raw(archetype).unwrap();
-                let slice = std::slice::from_raw_parts(ptr as *const C, len);
+                let slice = core::slice::from_raw_parts(ptr as *const C, len);
                 (serialize)(&slice);
             };
         let serialize_fn = |ptr, serialize: &mut dyn FnMut(&dyn erased_serde::Serialize)| {
@@ -139,12 +141,12 @@ where
         let deserialize_single_boxed_fn = |deserializer: &mut dyn erased_serde::Deserializer| {
             let component = erased_serde::deserialize::<C>(deserializer)?;
             unsafe {
-                let vec = std::slice::from_raw_parts(
+                let vec = core::slice::from_raw_parts(
                     &component as *const C as *const u8,
-                    std::mem::size_of::<C>(),
+                    core::mem::size_of::<C>(),
                 )
                 .to_vec();
-                std::mem::forget(component);
+                core::mem::forget(component);
                 Ok(vec.into_boxed_slice())
             }
         };
@@ -353,7 +355,7 @@ impl<'a, 'de, T: Component + for<'b> serde::de::Deserialize<'b>> serde::de::Dese
         {
             type Value = ();
 
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                 formatter.write_str("component seq")
             }
 
@@ -369,7 +371,7 @@ impl<'a, 'de, T: Component + for<'b> serde::de::Deserialize<'b>> serde::de::Dese
                     unsafe {
                         let ptr = &component as *const C as *const u8;
                         self.storage.extend_memcopy_raw(ptr, 1);
-                        std::mem::forget(component)
+                        core::mem::forget(component)
                     }
                 }
                 Ok(())

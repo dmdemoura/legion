@@ -3,9 +3,8 @@
 //! Use resources to share persistent data between systems or to provide a system with state
 //! external to entities.
 
-use std::{
+use core::{
     any::TypeId,
-    collections::{hash_map::Entry, HashMap},
     fmt::{Display, Formatter},
     hash::{BuildHasherDefault, Hasher},
     marker::PhantomData,
@@ -15,7 +14,9 @@ use atomic_refcell::{AtomicRef, AtomicRefCell, AtomicRefMut};
 use downcast_rs::{impl_downcast, Downcast};
 
 use crate::internals::{
+    alloc_prelude::*,
     hash::ComponentTypeIdHasher,
+    hashmap::{hash_map::Entry, HashMap},
     query::view::{read::Read, write::Write, ReadOnly},
 };
 
@@ -33,12 +34,12 @@ impl ResourceTypeId {
         Self {
             type_id: TypeId::of::<T>(),
             #[cfg(debug_assertions)]
-            name: std::any::type_name::<T>(),
+            name: core::any::type_name::<T>(),
         }
     }
 }
 
-impl std::hash::Hash for ResourceTypeId {
+impl core::hash::Hash for ResourceTypeId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.type_id.hash(state);
     }
@@ -52,12 +53,12 @@ impl PartialEq for ResourceTypeId {
 
 impl Display for ResourceTypeId {
     #[cfg(debug_assertions)]
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.name)
     }
 
     #[cfg(not(debug_assertions))]
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?}", self.type_id)
     }
 }
@@ -224,6 +225,11 @@ pub struct UnsafeResources {
     map: HashMap<ResourceTypeId, ResourceCell, BuildHasherDefault<ComponentTypeIdHasher>>,
 }
 
+#[cfg(feature = "alloc")]
+pub type UnsafeResourcesEntry<'a> = Entry<'a, ResourceTypeId, ResourceCell, BuildHasherDefault<ComponentTypeIdHasher>>;
+#[cfg(feature = "std")]
+pub type UnsafeResourcesEntry<'a> = Entry<'a, ResourceTypeId, ResourceCell>;
+
 unsafe impl Send for UnsafeResources {}
 unsafe impl Sync for UnsafeResources {}
 
@@ -234,7 +240,7 @@ impl UnsafeResources {
 
     /// # Safety
     /// Resources which are `!Sync` or `!Send` must be retrieved or inserted only on the main thread.
-    unsafe fn entry(&mut self, type_id: ResourceTypeId) -> Entry<ResourceTypeId, ResourceCell> {
+    unsafe fn entry(&mut self, type_id: ResourceTypeId) -> UnsafeResourcesEntry {
         self.map.entry(type_id)
     }
 
@@ -469,12 +475,12 @@ mod tests {
         });
 
         resources.insert(NotSync {
-            ptr: std::ptr::null(),
+            ptr: core::ptr::null(),
         });
 
         assert_eq!(resources.get::<TestOne>().unwrap().value, "one");
         assert_eq!(resources.get::<TestTwo>().unwrap().value, "two");
-        assert_eq!(resources.get::<NotSync>().unwrap().ptr, std::ptr::null());
+        assert_eq!(resources.get::<NotSync>().unwrap().ptr, core::ptr::null());
 
         // test re-ownership
         let owned = resources.remove::<TestTwo>();

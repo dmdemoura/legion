@@ -5,7 +5,7 @@ use super::{
     component::ComponentTypeId,
     slicevec::SliceVec,
 };
-use crate::internals::query::filter::LayoutFilter;
+use crate::internals::{alloc_prelude::*, query::filter::LayoutFilter};
 
 /// An index of archetype layouts used to accelerate query evaluation.
 #[derive(Default, Debug)]

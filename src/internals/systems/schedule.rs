@@ -1,15 +1,12 @@
 //! Contains types related to defining system schedules.
 
 #[cfg(feature = "parallel")]
-use std::iter::repeat;
-use std::{
+use core::iter::repeat;
+#[cfg(feature = "parallel")]
+use core::sync::atomic::{AtomicUsize, Ordering};
+use core::{
     cell::UnsafeCell,
     fmt::{Debug, Formatter},
-};
-#[cfg(feature = "parallel")]
-use std::{
-    collections::{HashMap, HashSet},
-    sync::atomic::{AtomicUsize, Ordering},
 };
 
 #[cfg(feature = "parallel")]
@@ -23,6 +20,8 @@ use super::{
     system::SystemId,
 };
 use crate::internals::{
+    alloc_prelude::*,
+    hashmap::{HashMap, HashSet},
     storage::component::ComponentTypeId,
     subworld::ArchetypeAccess,
     world::{World, WorldId},
@@ -34,7 +33,7 @@ pub trait ParallelRunnable: Runnable + Send + Sync {}
 impl<T: Runnable + Send + Sync> ParallelRunnable for T {}
 
 impl Debug for dyn ParallelRunnable {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
         Debug::fmt(&self.name(), f)
     }
 }
@@ -78,7 +77,7 @@ pub trait Runnable {
 }
 
 impl Debug for dyn Runnable {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
         Debug::fmt(&self.name(), f)
     }
 }
@@ -111,17 +110,17 @@ unsafe impl Sync for SystemBox {}
 
 impl SystemBox {
     unsafe fn get(&self) -> &dyn ParallelRunnable {
-        std::ops::Deref::deref(&*self.0.get())
+        core::ops::Deref::deref(&*self.0.get())
     }
 
     #[allow(clippy::mut_from_ref)]
     unsafe fn get_mut(&self) -> &mut dyn ParallelRunnable {
-        std::ops::DerefMut::deref_mut(&mut *self.0.get())
+        core::ops::DerefMut::deref_mut(&mut *self.0.get())
     }
 }
 
 impl Debug for SystemBox {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
         // Safety: we have &self access, and if anyone else is mutably accessing this data concurrently via another &self, it is their responsibility to ensure that they are not beaking aliasing rules
         unsafe { Debug::fmt(&self.get().name(), f) }
     }
@@ -172,7 +171,7 @@ impl Executor {
 
                 fn add_write(&mut self, idx: usize) -> Vec<usize> {
                     let mut dependencies = Vec::new();
-                    std::mem::swap(&mut self.readers, &mut dependencies);
+                    core::mem::swap(&mut self.readers, &mut dependencies);
                     if let Some(writer) = self.last_writer.replace(idx) {
                         dependencies.push(writer)
                     }
@@ -436,7 +435,7 @@ impl Builder {
     fn finalize_executor(&mut self) {
         if !self.accumulator.is_empty() {
             let mut systems = Vec::new();
-            std::mem::swap(&mut self.accumulator, &mut systems);
+            core::mem::swap(&mut self.accumulator, &mut systems);
             let executor = Executor::new(systems);
             self.steps.push(Step::Systems(executor));
         }
@@ -466,7 +465,7 @@ impl Builder {
     pub fn build(&mut self) -> Schedule {
         self.flush();
         let mut steps = Vec::new();
-        std::mem::swap(&mut self.steps, &mut steps);
+        core::mem::swap(&mut self.steps, &mut steps);
         Schedule { steps }
     }
 }
@@ -493,7 +492,7 @@ pub enum Step {
 }
 
 impl Debug for Step {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
         match self {
             Step::Systems(x) => f.debug_tuple("Systems").field(&x).finish(),
             Step::FlushCmdBuffers => f.debug_tuple("FlushCmdBuffers").finish(),
@@ -745,7 +744,7 @@ mod tests {
         #[derive(Clone, Copy, Debug, PartialEq)]
         struct NotSync(*const u8);
 
-        resources.insert(NotSync(std::ptr::null()));
+        resources.insert(NotSync(core::ptr::null()));
 
         let system = SystemBuilder::new("one")
             .read_resource::<NotSync>()

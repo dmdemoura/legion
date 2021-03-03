@@ -11,6 +11,7 @@ use super::{
 };
 use crate::{
     internals::{
+        alloc_prelude::*,
         storage::{archetype::EntityLayout, component::ComponentTypeId},
         world::World,
     },
@@ -54,7 +55,7 @@ pub struct WorldVisitor<'a, W: WorldDeserializer, E: EntitySerializer> {
 impl<'a, 'de, W: WorldDeserializer, E: EntitySerializer> Visitor<'de> for WorldVisitor<'a, W, E> {
     type Value = ();
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
         formatter.write_str("map")
     }
 

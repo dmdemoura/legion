@@ -1,8 +1,9 @@
 //! Contains types related to inserting new entities into a [`World`](super::world::World)
 
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use super::{
+    alloc_prelude::*,
     entity::Entity,
     query::filter::{FilterResult, LayoutFilter},
     storage::{
@@ -131,7 +132,7 @@ impl<'a, T: Component> ComponentWriter<'a, T> {
     /// The data in this array will be memcopied into the world's internal storage.
     /// If the component type is not `Copy`, then the caller must ensure that the memory
     /// copied is not accessed until it is re-initialized. It is recommended to immediately
-    /// `std::mem::forget` the source after calling `extend_memcopy`.
+    /// `core::mem::forget` the source after calling `extend_memcopy`.
     pub unsafe fn extend_memcopy(&mut self, ptr: *const T, len: usize) {
         self.components.extend_memcopy(self.archetype, ptr, len)
     }
@@ -159,7 +160,7 @@ impl<'a> UnknownComponentWriter<'a> {
     /// The data in this array will be memcopied into the world's internal storage.
     /// If the component type is not `Copy`, then the caller must ensure that the memory
     /// copied is not accessed until it is re-initialized. It is recommended to immediately
-    /// `std::mem::forget` the source after calling `extend_memcopy`.
+    /// `core::mem::forget` the source after calling `extend_memcopy`.
     pub unsafe fn extend_memcopy_raw(&mut self, ptr: *const u8, len: usize) {
         self.components.extend_memcopy_raw(self.archetype, ptr, len)
     }
@@ -416,7 +417,7 @@ macro_rules! impl_component_source {
                     let ($([<$ty _vec>], )*) = self;
                     Soa {
                         vecs: ($({
-                            let mut [<$ty _vec>] = std::mem::ManuallyDrop::new([<$ty _vec>]);
+                            let mut [<$ty _vec>] = core::mem::ManuallyDrop::new([<$ty _vec>]);
                             SoaElement {
                                 _phantom: PhantomData,
                                 capacity: [<$ty _vec>].capacity(),
@@ -559,7 +560,7 @@ macro_rules! impl_component_source {
                         $(
                             unsafe {
                                 [<$ty _target>].extend_memcopy(&$ty, 1);
-                                std::mem::forget($ty);
+                                core::mem::forget($ty);
                             }
                         )*
                     }

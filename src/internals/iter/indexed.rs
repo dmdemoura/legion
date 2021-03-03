@@ -1,4 +1,6 @@
-use std::iter::FusedIterator;
+use core::iter::FusedIterator;
+
+use crate::internals::alloc_prelude::*;
 
 pub unsafe trait TrustedRandomAccess: Sized {
     type Item;
@@ -197,9 +199,9 @@ macro_rules! impl_zip_slices {
 
                 #[inline]
                 fn len(&self) -> usize {
-                    let len = std::usize::MAX;
+                    let len = core::usize::MAX;
                     let ($(ref $ty,)*) = self;
-                    $( let len = std::cmp::min(len, $ty.len()); )*
+                    $( let len = core::cmp::min(len, $ty.len()); )*
                     len
                 }
 

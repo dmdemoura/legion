@@ -1,11 +1,16 @@
-use std::collections::{hash_map::Entry, HashMap};
-
 use scoped_tls_hkt::scoped_thread_local;
 use serde::{Deserialize, Serialize, Serializer};
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::{internals::entity::EntityHasher, world::Allocate, Entity};
+use crate::{
+    internals::{
+        entity::EntityHasher,
+        hashmap::{hash_map::Entry, HashMap},
+    },
+    world::Allocate,
+    Entity,
+};
 
 /// Describes how to serialize and deserialize a runtime `Entity` ID.
 ///

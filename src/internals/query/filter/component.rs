@@ -1,10 +1,13 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use super::{
     and::And, not::Not, or::Or, passthrough::Passthrough, ActiveFilter, FilterResult, GroupMatcher,
     LayoutFilter,
 };
-use crate::internals::storage::component::{Component, ComponentTypeId};
+use crate::internals::{
+    alloc_prelude::*,
+    storage::component::{Component, ComponentTypeId},
+};
 
 /// A filter which matches `true` when the given component exists in the archetype.
 #[derive(Debug)]
@@ -40,7 +43,7 @@ impl<T: Component> LayoutFilter for ComponentFilter<T> {
     }
 }
 
-impl<T: Component> std::ops::Not for ComponentFilter<T> {
+impl<T: Component> core::ops::Not for ComponentFilter<T> {
     type Output = Not<Self>;
 
     #[inline]
@@ -49,7 +52,7 @@ impl<T: Component> std::ops::Not for ComponentFilter<T> {
     }
 }
 
-impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for ComponentFilter<T> {
+impl<'a, T: Component, Rhs: ActiveFilter> core::ops::BitAnd<Rhs> for ComponentFilter<T> {
     type Output = And<(Self, Rhs)>;
 
     #[inline]
@@ -60,7 +63,7 @@ impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitAnd<Rhs> for ComponentFil
     }
 }
 
-impl<'a, T: Component> std::ops::BitAnd<Passthrough> for ComponentFilter<T> {
+impl<'a, T: Component> core::ops::BitAnd<Passthrough> for ComponentFilter<T> {
     type Output = Self;
 
     #[inline]
@@ -69,7 +72,7 @@ impl<'a, T: Component> std::ops::BitAnd<Passthrough> for ComponentFilter<T> {
     }
 }
 
-impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitOr<Rhs> for ComponentFilter<T> {
+impl<'a, T: Component, Rhs: ActiveFilter> core::ops::BitOr<Rhs> for ComponentFilter<T> {
     type Output = Or<(Self, Rhs)>;
 
     #[inline]
@@ -80,7 +83,7 @@ impl<'a, T: Component, Rhs: ActiveFilter> std::ops::BitOr<Rhs> for ComponentFilt
     }
 }
 
-impl<'a, T: Component> std::ops::BitOr<Passthrough> for ComponentFilter<T> {
+impl<'a, T: Component> core::ops::BitOr<Passthrough> for ComponentFilter<T> {
     type Output = Self;
 
     #[inline]

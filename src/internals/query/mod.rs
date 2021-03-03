@@ -1,4 +1,4 @@
-use std::{collections::HashMap, marker::PhantomData, ops::Range, slice::Iter};
+use core::{marker::PhantomData, ops::Range, slice::Iter};
 
 use filter::{DynamicFilter, EntityFilter, GroupMatcher};
 use parking_lot::Mutex;
@@ -6,7 +6,9 @@ use view::{DefaultFilter, Fetch, IntoIndexableIter, IntoView, ReadOnlyFetch, Vie
 
 use super::world::EntityAccessError;
 use crate::internals::{
+    alloc_prelude::*,
     entity::Entity,
+    hashmap::HashMap,
     storage::{
         archetype::{Archetype, ArchetypeIndex},
         component::Component,
@@ -152,10 +154,10 @@ impl<V: IntoView, F: EntityFilter> Query<V, F> {
     }
 
     /// Adds an additional filter to the query.
-    pub fn filter<T: EntityFilter>(self, filter: T) -> Query<V, <F as std::ops::BitAnd<T>>::Output>
+    pub fn filter<T: EntityFilter>(self, filter: T) -> Query<V, <F as core::ops::BitAnd<T>>::Output>
     where
-        F: std::ops::BitAnd<T>,
-        <F as std::ops::BitAnd<T>>::Output: EntityFilter,
+        F: core::ops::BitAnd<T>,
+        <F as core::ops::BitAnd<T>>::Output: EntityFilter,
     {
         Query {
             _view: self._view,
@@ -271,7 +273,7 @@ impl<V: IntoView, F: EntityFilter> Query<V, F> {
 
         let arch_slice = [location.archetype()];
         let arch_slice_ref: &[ArchetypeIndex] = &arch_slice;
-        let arch_slice_ref = std::mem::transmute(arch_slice_ref);
+        let arch_slice_ref = core::mem::transmute(arch_slice_ref);
         let result = QueryResult::unordered(arch_slice_ref);
         let mut fetch = if let Some(Some(fetch)) =
             <V::View as View<'world>>::fetch(accessor.components(), accessor.archetypes(), result)
@@ -377,8 +379,8 @@ impl<V: IntoView, F: EntityFilter> Query<V, F> {
         // The ChunkIter only returns (unmolested) 'world references. Our virtual lifetime
         // cannot leak out of it. When the iterator is dropped, our virtual lifetime dies with it.
 
-        let result = std::mem::transmute::<QueryResult<'_>, QueryResult<'world>>(result);
-        let indices = std::mem::transmute::<Iter<'_, ArchetypeIndex>, Iter<'query, ArchetypeIndex>>(
+        let result = core::mem::transmute::<QueryResult<'_>, QueryResult<'world>>(result);
+        let indices = core::mem::transmute::<Iter<'_, ArchetypeIndex>, Iter<'query, ArchetypeIndex>>(
             result.index.iter(),
         );
 
@@ -485,7 +487,7 @@ impl<V: IntoView, F: EntityFilter> Query<V, F> {
     pub unsafe fn iter_unchecked<'query, 'world, T: EntityStore>(
         &'query mut self,
         world: &'world T,
-    ) -> std::iter::Flatten<ChunkIter<'world, 'query, V::View, F>> {
+    ) -> core::iter::Flatten<ChunkIter<'world, 'query, V::View, F>> {
         self.iter_chunks_unchecked(world).flatten()
     }
 
@@ -511,7 +513,7 @@ impl<V: IntoView, F: EntityFilter> Query<V, F> {
     pub fn iter_mut<'query, 'world, T: EntityStore>(
         &'query mut self,
         world: &'world mut T,
-    ) -> std::iter::Flatten<ChunkIter<'world, 'query, V::View, F>> {
+    ) -> core::iter::Flatten<ChunkIter<'world, 'query, V::View, F>> {
         // safety: we have exclusive access to world
         unsafe { self.iter_unchecked(world) }
     }
@@ -535,7 +537,7 @@ impl<V: IntoView, F: EntityFilter> Query<V, F> {
     pub fn iter<'query, 'world, T: EntityStore>(
         &'query mut self,
         world: &'world T,
-    ) -> std::iter::Flatten<ChunkIter<'world, 'query, V::View, F>>
+    ) -> core::iter::Flatten<ChunkIter<'world, 'query, V::View, F>>
     where
         <V::View as View<'world>>::Fetch: ReadOnlyFetch,
     {
@@ -932,7 +934,7 @@ where
 
 #[cfg(feature = "parallel")]
 pub mod par_iter {
-    use std::marker::PhantomData;
+    use core::marker::PhantomData;
 
     use rayon::iter::{
         plumbing::{bridge_unindexed, Folder, UnindexedConsumer, UnindexedProducer},
@@ -949,7 +951,7 @@ pub mod par_iter {
         D: DynamicFilter + 'query,
     {
         inner: V::Iter,
-        indices: std::slice::Iter<'query, ArchetypeIndex>,
+        indices: core::slice::Iter<'query, ArchetypeIndex>,
         filter: &'query Mutex<D>,
         archetypes: &'world [Archetype],
         max_count: usize,
@@ -1255,7 +1257,7 @@ mod test {
     #[test]
     #[cfg(feature = "parallel")]
     fn par_iter() {
-        use std::sync::atomic::*;
+        use core::sync::atomic::*;
 
         for _ in 0..1000 {
             let mut w = World::default();
