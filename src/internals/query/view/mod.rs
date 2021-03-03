@@ -17,7 +17,7 @@ use crate::internals::{
     storage::{
         archetype::Archetype,
         component::{Component, ComponentTypeId},
-        Components,
+        Components, Version as ComponentVersion,
     },
     subworld::ComponentAccess,
 };
@@ -135,7 +135,7 @@ pub trait Fetch: IntoIndexableIter + Send + Sync {
 
     /// Tries to find the component slice version of a component,
     /// if this fetch contains the requested component type.
-    fn version<T: Component>(&self) -> Option<u64>;
+    fn version<T: Component>(&self) -> Option<ComponentVersion>;
 
     /// Indicates that the archetype is going to be provided to the user.
     /// Component slice versions are incremented here.
@@ -354,7 +354,7 @@ macro_rules! impl_view_tuple {
             }
 
             #[inline]
-            fn version<Comp: Component>(&self) -> Option<u64> {
+            fn version<Comp: Component>(&self) -> Option<ComponentVersion> {
                 #[allow(non_snake_case)]
                 let ($( $ty, )*) = &self.fetches;
                 let mut result = None;

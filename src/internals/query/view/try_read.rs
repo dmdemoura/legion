@@ -13,7 +13,7 @@ use crate::internals::{
     storage::{
         archetype::{Archetype, ArchetypeIndex},
         component::{Component, ComponentTypeId},
-        ComponentSlice, ComponentStorage, Components,
+        ComponentSlice, ComponentStorage, Components, Version as ComponentVersion,
     },
     subworld::ComponentAccess,
 };
@@ -125,7 +125,7 @@ impl<'a, T: Component> Iterator for TryReadIter<'a, T> {
 #[doc(hidden)]
 pub enum Slice<'a, T: Component> {
     Occupied {
-        version: &'a u64,
+        version: &'a ComponentVersion,
         components: &'a [T],
     },
     Empty(usize),
@@ -208,7 +208,7 @@ impl<'a, T: Component> Fetch for Slice<'a, T> {
     }
 
     #[inline]
-    fn version<C: Component>(&self) -> Option<u64> {
+    fn version<C: Component>(&self) -> Option<ComponentVersion> {
         if TypeId::of::<C>() == TypeId::of::<T>() {
             match self {
                 Self::Occupied { version, .. } => Some(**version),

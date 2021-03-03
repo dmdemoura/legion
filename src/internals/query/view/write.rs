@@ -14,6 +14,7 @@ use crate::internals::{
         archetype::{Archetype, ArchetypeIndex},
         component::{Component, ComponentTypeId},
         next_component_version, ComponentSliceMut, ComponentStorage, Components,
+        Version as ComponentVersion,
     },
     subworld::ComponentAccess,
 };
@@ -142,9 +143,9 @@ impl<'a, T: Component> Iterator for WriteIter<'a, T> {
 
 #[doc(hidden)]
 pub struct WriteFetch<'a, T: Component> {
-    version: &'a mut u64,
+    version: &'a mut ComponentVersion,
     components: &'a mut [T],
-    next_version: u64,
+    next_version: ComponentVersion,
 }
 
 impl<'a, T: Component> From<ComponentSliceMut<'a, T>> for WriteFetch<'a, T> {
@@ -214,7 +215,7 @@ impl<'a, T: Component> Fetch for WriteFetch<'a, T> {
     }
 
     #[inline]
-    fn version<C: Component>(&self) -> Option<u64> {
+    fn version<C: Component>(&self) -> Option<ComponentVersion> {
         if TypeId::of::<C>() == TypeId::of::<T>() {
             Some(*self.version)
         } else {

@@ -1,22 +1,19 @@
-use core::{
-    cell::RefCell,
-    fmt::Debug,
-    hash::BuildHasherDefault,
-    num::NonZeroU64,
-    sync::atomic::{AtomicU64, Ordering},
-};
+use core::{cell::RefCell, fmt::Debug, hash::BuildHasherDefault, sync::atomic::Ordering};
+
+#[cfg(feature = "adven-gba")]
+use adven_thread_local::thread_local;
 
 use super::{
     alloc_prelude::*,
-    hash::U64Hasher,
     hashmap::HashMap,
+    id::{AtomicID, IDHasher, NonZeroID, ID},
     storage::{archetype::ArchetypeIndex, ComponentIndex},
 };
 
 /// An opaque identifier for an entity.
 #[derive(Debug, Copy, PartialEq, Eq, Hash)]
 #[repr(transparent)]
-pub struct Entity(NonZeroU64);
+pub struct Entity(NonZeroID);
 
 thread_local! {
     pub static ID_CLONE_MAPPINGS: RefCell<HashMap<Entity, Entity, EntityHasher>> = RefCell::new(HashMap::default());
@@ -31,17 +28,17 @@ impl Clone for Entity {
     }
 }
 
-const BLOCK_SIZE: u64 = 16;
+const BLOCK_SIZE: ID = 16;
 const BLOCK_SIZE_USIZE: usize = BLOCK_SIZE as usize;
 
 // Always divisible by BLOCK_SIZE.
 // Safety: This must never be 0, so skip the first block
-static NEXT_ENTITY: AtomicU64 = AtomicU64::new(BLOCK_SIZE);
+static NEXT_ENTITY: AtomicID = AtomicID::new(BLOCK_SIZE);
 
 /// An iterator which yields new entity IDs.
 #[derive(Debug)]
 pub struct Allocate {
-    next: u64,
+    next: ID,
 }
 
 impl Allocate {
@@ -73,7 +70,7 @@ impl<'a> Iterator for Allocate {
         // and no overflow occurs in NEXT_ENTITY
         let entity = unsafe {
             debug_assert_ne!(self.next, 0);
-            Entity(NonZeroU64::new_unchecked(self.next))
+            Entity(NonZeroID::new_unchecked(self.next))
         };
         self.next += 1;
         Some(entity)
@@ -102,13 +99,13 @@ impl EntityLocation {
 }
 
 /// A hasher optimized for entity IDs.
-pub type EntityHasher = BuildHasherDefault<U64Hasher>;
+pub type EntityHasher = BuildHasherDefault<IDHasher>;
 
 /// A map of entity IDs to their storage locations.
 #[derive(Clone, Default)]
 pub struct LocationMap {
     len: usize,
-    blocks: HashMap<u64, Box<[Option<EntityLocation>; BLOCK_SIZE_USIZE]>, EntityHasher>,
+    blocks: HashMap<ID, Box<[Option<EntityLocation>; BLOCK_SIZE_USIZE]>, EntityHasher>,
 }
 
 impl Debug for LocationMap {
@@ -117,9 +114,9 @@ impl Debug for LocationMap {
             locs.iter().enumerate().filter_map(move |(i, loc)| {
                 // Safety: as long as the inserted entities are valid, this should also be valid
                 let entity = unsafe {
-                    let id = *base + i as u64;
+                    let id = *base + i as ID;
                     debug_assert_ne!(id, 0);
-                    Entity(NonZeroU64::new_unchecked(id))
+                    Entity(NonZeroID::new_unchecked(id))
                 };
                 loc.map(|loc| (entity, loc))
             })
@@ -151,7 +148,7 @@ impl LocationMap {
         arch: ArchetypeIndex,
         ComponentIndex(base): ComponentIndex,
     ) -> Vec<EntityLocation> {
-        let mut current_block = u64::MAX;
+        let mut current_block = ID::MAX;
         let mut block_vec = None;
         let mut removed = Vec::new();
         for (i, entity) in ids.iter().enumerate() {

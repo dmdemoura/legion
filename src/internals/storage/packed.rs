@@ -14,7 +14,7 @@ use core::{
 use super::{
     archetype::ArchetypeIndex, component::Component, next_component_version, ComponentIndex,
     ComponentMeta, ComponentSlice, ComponentSliceMut, ComponentStorage, Epoch,
-    UnknownComponentStorage,
+    UnknownComponentStorage, Version,
 };
 use crate::internals::alloc_prelude::*;
 
@@ -292,7 +292,7 @@ pub struct PackedStorage<T: Component> {
     // The current epoch
     epoch: Epoch,
     // Ordered archetype versions
-    versions: Vec<UnsafeCell<u64>>,
+    versions: Vec<UnsafeCell<Version>>,
     // Ordered allocation metadata
     allocations: Vec<ComponentVec<T>>,
 }
@@ -585,7 +585,7 @@ impl<'a, T: Component> ComponentStorage<'a, T> for PackedStorage<T> {
 
 #[doc(hidden)]
 pub struct ComponentIter<'a, T> {
-    slices: Zip<Iter<'a, (NonNull<T>, usize)>, Iter<'a, UnsafeCell<u64>>>,
+    slices: Zip<Iter<'a, (NonNull<T>, usize)>, Iter<'a, UnsafeCell<Version>>>,
 }
 
 impl<'a, T: Component> Iterator for ComponentIter<'a, T> {
@@ -603,7 +603,7 @@ impl<'a, T: Component> Iterator for ComponentIter<'a, T> {
 
 #[doc(hidden)]
 pub struct ComponentIterMut<'a, T> {
-    slices: Zip<Iter<'a, (NonNull<T>, usize)>, Iter<'a, UnsafeCell<u64>>>,
+    slices: Zip<Iter<'a, (NonNull<T>, usize)>, Iter<'a, UnsafeCell<Version>>>,
 }
 
 impl<'a, T: Component> Iterator for ComponentIterMut<'a, T> {

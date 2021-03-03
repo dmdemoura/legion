@@ -4,7 +4,10 @@ use super::{
     and::And, not::Not, or::Or, passthrough::Passthrough, ActiveFilter, DynamicFilter, FilterResult,
 };
 use crate::internals::{
-    hashmap::HashMap, query::view::Fetch, storage::component::Component, world::WorldId,
+    hashmap::HashMap,
+    query::view::Fetch,
+    storage::{component::Component, Version as ComponentVersion},
+    world::WorldId,
 };
 
 /// A filter which performs coarse-grained change detection.
@@ -14,10 +17,10 @@ use crate::internals::{
 #[derive(Debug)]
 pub struct ComponentChangedFilter<T: Component> {
     _phantom: PhantomData<T>,
-    history: HashMap<WorldId, u64>,
+    history: HashMap<WorldId, ComponentVersion>,
     world: Option<WorldId>,
-    threshold: u64,
-    maximum: u64,
+    threshold: ComponentVersion,
+    maximum: ComponentVersion,
 }
 
 impl<T: Component> Default for ComponentChangedFilter<T> {

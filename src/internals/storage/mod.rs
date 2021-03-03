@@ -1,7 +1,7 @@
 use core::{
     hash::BuildHasherDefault,
     ops::{Deref, DerefMut, Index, IndexMut},
-    sync::atomic::{AtomicU64, Ordering},
+    sync::atomic::Ordering,
 };
 
 use archetype::ArchetypeIndex;
@@ -12,6 +12,7 @@ use crate::internals::{
     alloc_prelude::*,
     hash::ComponentTypeIdHasher,
     hashmap::{HashMap, HashSet},
+    id::{AtomicID, ID},
 };
 
 pub mod archetype;
@@ -75,10 +76,10 @@ pub type Epoch = u64;
 
 /// The version of a component slice. Versions are incremented when the sliace is
 /// accessed mutably.
-pub type Version = u64;
+pub type Version = ID;
 
-static COMPONENT_VERSION: AtomicU64 = AtomicU64::new(0);
-pub(crate) fn next_component_version() -> u64 {
+static COMPONENT_VERSION: AtomicID = AtomicID::new(0);
+pub(crate) fn next_component_version() -> ID {
     COMPONENT_VERSION.fetch_add(1, Ordering::SeqCst)
 }
 

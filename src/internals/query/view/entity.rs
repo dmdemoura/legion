@@ -12,7 +12,7 @@ use crate::internals::{
     storage::{
         archetype::{Archetype, ArchetypeIndex},
         component::{Component, ComponentTypeId},
-        Components,
+        Components, Version as ComponentVersion,
     },
     subworld::ComponentAccess,
 };
@@ -147,7 +147,7 @@ impl<'a> Fetch for EntityFetch<'a> {
     }
 
     #[inline]
-    fn version<C: Component>(&self) -> Option<u64> {
+    fn version<C: Component>(&self) -> Option<ComponentVersion> {
         None
     }
 

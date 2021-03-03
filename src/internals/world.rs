@@ -1,8 +1,5 @@
 //! Contains types related to the [`World`] entity collection.
-use core::{
-    ops::Range,
-    sync::atomic::{AtomicU64, Ordering},
-};
+use core::{ops::Range, sync::atomic::Ordering};
 
 use bit_set::BitSet;
 use itertools::Itertools;
@@ -13,6 +10,7 @@ use super::{
     entry::{Entry, EntryMut, EntryRef},
     event::{EventSender, Subscriber, Subscribers},
     hashmap::{hash_map, HashMap},
+    id::{AtomicID, ID},
     insert::{ArchetypeSource, ArchetypeWriter, ComponentSource, IntoComponentSource},
     query::{
         filter::{EntityFilter, LayoutFilter},
@@ -45,10 +43,7 @@ pub enum EntityAccessError {
     )]
     AccessDenied,
     /// Attempted to access an entity which does not exist.
-    #[cfg_attr(
-        feature = "std",
-        error("the entity does not exist")
-    )]
+    #[cfg_attr(feature = "std", error("the entity does not exist"))]
     EntityNotFound,
 }
 
@@ -72,8 +67,8 @@ pub trait EntityStore {
 
 /// Unique identifier for a [`World`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WorldId(u64);
-static WORLD_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
+pub struct WorldId(ID);
+static WORLD_ID_COUNTER: AtomicID = AtomicID::new(0);
 
 impl WorldId {
     fn next() -> Self {

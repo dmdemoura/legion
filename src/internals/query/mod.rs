@@ -1,7 +1,6 @@
 use core::{marker::PhantomData, ops::Range, slice::Iter};
 
 use filter::{DynamicFilter, EntityFilter, GroupMatcher};
-use parking_lot::Mutex;
 use view::{DefaultFilter, Fetch, IntoIndexableIter, IntoView, ReadOnlyFetch, View};
 
 use super::world::EntityAccessError;
@@ -14,6 +13,7 @@ use crate::internals::{
         component::Component,
         group::SubGroup,
     },
+    sync::Mutex,
     world::{EntityStore, StorageAccessor, WorldId},
 };
 

@@ -1,16 +1,27 @@
 use core::hash::Hasher;
 
+use super::id::ID;
+
 /// A hasher optimized for hashing component type IDs.
 #[derive(Default)]
-pub struct ComponentTypeIdHasher(u64);
+pub struct ComponentTypeIdHasher(ID);
 
 impl Hasher for ComponentTypeIdHasher {
     #[inline]
     fn finish(&self) -> u64 {
-        self.0
+        self.0 as u64
     }
 
     #[inline]
+    #[cfg(feature = "adven-gba")]
+    fn write_u32(&mut self, seed: u32) {
+        // This must only be used to hash one value.
+        debug_assert_eq!(self.0, 0);
+        self.0 = seed;
+    }
+
+    #[inline]
+    #[cfg(not(feature = "adven-gba"))]
     fn write_u64(&mut self, seed: u64) {
         // This must only be used to hash one value.
         debug_assert_eq!(self.0, 0);
@@ -44,6 +55,31 @@ impl Hasher for U64Hasher {
 
     fn write(&mut self, _bytes: &[u8]) {
         // This should not be called, only write_u64.
+        unimplemented!()
+    }
+}
+
+/// A hasher optimized for hashing types that are represented as a u32.
+#[derive(Default)]
+pub struct U32Hasher(u32);
+
+impl Hasher for U32Hasher {
+    #[inline]
+    fn finish(&self) -> u64 {
+        self.0 as u64
+    }
+
+    #[inline]
+    fn write_u32(&mut self, seed: u32) {
+        // This must only be used to hash one value.
+        debug_assert_eq!(self.0, 0);
+
+        let max_prime = 2_654_404_609u32; //TODO: Is this correct?
+        self.0 = max_prime.wrapping_mul(seed);
+    }
+
+    fn write(&mut self, _bytes: &[u8]) {
+        // This should not be called, only write_u32.
         unimplemented!()
     }
 }

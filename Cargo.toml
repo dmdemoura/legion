@@ -21,6 +21,7 @@ stdweb = ["uuid/stdweb"]
 wasm-bindgen = ["uuid/wasm-bindgen"]
 std = ["parking_lot", "bit-set/std", "downcast-rs/std", "uuid/std", "itertools/use_std", "thiserror"]
 alloc = ["itertools/use_alloc", "hashbrown"]
+adven-gba = [ "adven-thread-local", "adven/gba" ]
 
 [dependencies]
 legion_codegen = { path = "codegen", version = "0.4.0", optional = true }
@@ -39,6 +40,11 @@ erased-serde = { version = "0.3", optional = true }
 crossbeam-channel = { version = "0.5", optional = true }
 atomic_refcell = "0.1.6"
 hashbrown = { version = "0.9.1", optional = true }
+adven = { path = "../../adven/adven", optional = true }
+adven-thread-local = { path = "../adven-thread-local", optional = true }
+
+[patch.crates-io]
+radium = { path = "../../adven/radium" }
 
 [dev-dependencies]
 serde_json = "1.0"
