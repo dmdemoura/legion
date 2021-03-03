@@ -35,13 +35,20 @@ type MapEntry<'a, K, V> = hash_map::Entry<'a, K, V, hash_map::DefaultHashBuilder
 type MapEntry<'a, K, V> = hash_map::Entry<'a, K, V>;
 
 /// Error type representing a failure to access entity data.
-#[derive(thiserror::Error, Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "std", derive(thiserror::Error))]
 pub enum EntityAccessError {
     /// Attempted to access an entity which lies outside of the subworld.
-    #[error("this world does not have permission to access the entity")]
+    #[cfg_attr(
+        feature = "std",
+        error("this world does not have permission to access the entity")
+    )]
     AccessDenied,
     /// Attempted to access an entity which does not exist.
-    #[error("the entity does not exist")]
+    #[cfg_attr(
+        feature = "std",
+        error("the entity does not exist")
+    )]
     EntityNotFound,
 }
 

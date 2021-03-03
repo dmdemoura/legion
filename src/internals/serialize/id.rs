@@ -1,5 +1,6 @@
 use scoped_tls_hkt::scoped_thread_local;
 use serde::{Deserialize, Serialize, Serializer};
+#[cfg(feature = "std")]
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -140,13 +141,20 @@ impl<'de> Deserialize<'de> for Entity {
 pub type EntityName = [u8; 16];
 
 /// Error returned on unsucessful attempt to canonize an entity.
-#[derive(Error, Debug, Copy, Clone, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Hash)]
+#[cfg_attr(feature = "std", derive(Error))]
 pub enum CanonizeError {
     /// The entity already exists bound to a different name.
-    #[error("the entity is already bound to name {0:?}")]
+    #[cfg_attr(
+        feature = "std",
+        error("the entity is already bound to name {0:?}")
+    )]
     EntityAlreadyBound(Entity, EntityName),
     /// The name already exists bound to a different entity.
-    #[error("the name is already bound to a different entity")]
+    #[cfg_attr(
+        feature = "std",
+        error("the name is already bound to a different entity")
+    )]
     NameAlreadyBound(Entity, EntityName),
 }
 

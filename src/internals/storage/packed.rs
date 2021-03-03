@@ -86,7 +86,7 @@ impl<T> Drop for RawAlloc<T> {
             unsafe {
                 let layout =
                     Layout::from_size_align_unchecked(size_of::<T>() * self.cap, align_of::<T>());
-                alloc::dealloc(self.ptr.as_ptr() as *mut _, layout);
+                alloc::alloc::dealloc(self.ptr.as_ptr() as *mut _, layout);
             }
         }
     }
